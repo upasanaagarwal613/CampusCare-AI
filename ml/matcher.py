@@ -1,3 +1,7 @@
+# Configurable automatic assignment threshold (can be adjusted or overridden via app config)
+AUTO_ASSIGN_THRESHOLD = 60
+
+
 class ProviderMatcher:
     """
     Explainable scoring algorithm for matching campus complaints with the best service providers.
@@ -6,6 +10,10 @@ class ProviderMatcher:
     2. Availability & Queue Bandwidth (Max 25 pts)
     3. Rating & Track Record (Max 20 pts)
     4. Proximity, Zone & Campus Affiliation (Max 15 pts)
+
+    Auto-Assignment Rule:
+    - score >= AUTO_ASSIGN_THRESHOLD (60): eligible for automatic recommendation/assignment
+    - score < AUTO_ASSIGN_THRESHOLD: requires manual review by Facilities Admin
     """
 
     ZONE_MAPPINGS = {
@@ -112,12 +120,15 @@ class ProviderMatcher:
 
         total_score = round(min(100, category_score + workload_score + rating_score + zone_score), 1)
 
+        is_auto_eligible = total_score >= AUTO_ASSIGN_THRESHOLD
         if total_score >= 80:
-            recommendation = "Optimal Match (Auto-Dispatch)"
-        elif total_score >= 60:
-            recommendation = "Suitable Match"
+            recommendation = "Optimal Match (Auto-Dispatch Eligible)"
+        elif is_auto_eligible:
+            recommendation = "Suitable Match (Auto-Dispatch Eligible)"
         else:
-            recommendation = "Low Compatibility"
+            recommendation = "Low Compatibility (Admin Review Required)"
+
+        explanation = f"{category_score}% skill match + {workload_score}% availability + {rating_score}% rating + {zone_score}% proximity"
 
         return {
             "provider_id": provider_dict.get("id"),
@@ -127,7 +138,9 @@ class ProviderMatcher:
             "active_jobs": p_active_jobs,
             "is_available": p_available,
             "total_score": total_score,
+            "auto_assign_eligible": is_auto_eligible,
             "recommendation": recommendation,
+            "explanation": explanation,
             "breakdown": breakdown,
         }
 
@@ -136,4 +149,6 @@ class ProviderMatcher:
         scored.sort(key=lambda x: x["total_score"], reverse=True)
         return scored
 
+
 provider_matcher = ProviderMatcher()
+

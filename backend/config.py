@@ -19,4 +19,6 @@ class Config:
     SQLALCHEMY_DATABASE_URI = raw_db_url or f"sqlite:///{os.path.join(DATA_DIR, 'campuscare.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = os.environ.get("FLASK_DEBUG", "False").lower() in ("true", "1", "t")
+    AUTO_ASSIGN_THRESHOLD = int(os.environ.get("AUTO_ASSIGN_THRESHOLD", 60))
+
 

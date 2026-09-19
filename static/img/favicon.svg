@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="favGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="favTeal" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <polygon points="60,10 102,32 102,88 60,110 18,88 18,32" fill="#0f172a" stroke="url(#favGrad)" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="60,24 88,40 32,40" fill="none" stroke="url(#favGrad)" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="60" cy="24" r="5" fill="#38bdf8"/>
+  <line x1="40" y1="42" x2="40" y2="76" stroke="url(#favGrad)" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="40" cy="76" r="4" fill="#06b6d4"/>
+  <line x1="60" y1="42" x2="60" y2="66" stroke="url(#favTeal)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="80" y1="42" x2="80" y2="76" stroke="url(#favGrad)" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="80" cy="76" r="4" fill="#06b6d4"/>
+  <line x1="40" y1="76" x2="60" y2="86" stroke="#38bdf8" stroke-width="2.5"/>
+  <line x1="80" y1="76" x2="60" y2="86" stroke="#38bdf8" stroke-width="2.5"/>
+  <circle cx="60" cy="86" r="7" fill="#2563eb" stroke="#38bdf8" stroke-width="2.5"/>
+  <circle cx="60" cy="86" r="3" fill="#ffffff"/>
+  <circle cx="60" cy="66" r="4" fill="#10b981"/>
+</svg>

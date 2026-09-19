@@ -89,7 +89,7 @@ def update_job_status(job_id):
     notes = data.get("notes")
     resolution_proof = data.get("resolution_proof")
 
-    valid_statuses = ["Accepted", "In Progress", "Completed", "Cancelled"]
+    valid_statuses = ["Accepted", "On the Way", "In Progress", "Completed", "Cancelled", "Rejected"]
     if new_status not in valid_statuses:
         return jsonify({"error": f"Invalid status. Must be one of: {valid_statuses}"}), 400
 
@@ -110,10 +110,18 @@ def update_job_status(job_id):
         image_file.save(save_path)
         job.resolution_image_url = f"/static/uploads/{unique_name}"
 
-    if new_status == "In Progress":
+    if new_status == "On the Way":
+        if complaint:
+            complaint.status = "On the Way"
+    elif new_status == "In Progress":
         job.started_at = utc_now()
         if complaint:
             complaint.status = "In Progress"
+    elif new_status == "Rejected":
+        if complaint:
+            complaint.status = "Submitted"
+        if job.provider and job.provider.active_jobs_count and job.provider.active_jobs_count > 0:
+            job.provider.active_jobs_count -= 1
     elif new_status == "Completed":
         job.completed_at = utc_now()
         if complaint:
@@ -147,3 +155,75 @@ def update_job_status(job_id):
         "job": job.to_dict(),
         "complaint_status": complaint.status if complaint else None
     })
+
+
+@provider_bp.route("/available-jobs", methods=["GET"])
+def get_available_jobs():
+    """
+    Fetches open/unassigned complaints suitable for the requesting provider.
+    Includes explainable match scores and location details.
+    """
+    provider_id = request.args.get("provider_id")
+    provider = None
+    if provider_id:
+        provider = db.session.get(Provider, provider_id)
+    if not provider:
+        user_id = session.get("user_id")
+        if user_id:
+            provider = Provider.query.filter_by(user_id=user_id).first()
+    if not provider:
+        provider = Provider.query.first()
+
+    if not provider:
+        return jsonify([])
+
+    college_name = provider.user.college_name if provider.user else None
+    query = Complaint.query.filter(Complaint.status == "Submitted")
+    if college_name:
+        query = query.filter(Complaint.college_name == college_name)
+
+    unassigned = query.order_by(Complaint.created_at.desc()).limit(20).all()
+    p_dict = provider.to_dict()
+    available = []
+    for c in unassigned:
+        c_dict = c.to_dict()
+        match_info = provider_matcher.score_provider(p_dict, c_dict)
+        c_dict["match_score"] = match_info["total_score"]
+        c_dict["match_explanation"] = match_info.get("explanation", "")
+        c_dict["recommendation"] = match_info.get("recommendation", "")
+        c_dict["breakdown"] = match_info.get("breakdown", {})
+        available.append(c_dict)
+
+    available.sort(key=lambda x: x.get("match_score", 0), reverse=True)
+    return jsonify(available)
+
+
+@provider_bp.route("/claim-job/<int:complaint_id>", methods=["POST"])
+def claim_job(complaint_id):
+    """Allows an eligible provider to accept/claim an unassigned work order."""
+    complaint = Complaint.query.get_or_404(complaint_id)
+    if complaint.status != "Submitted":
+        return jsonify({"error": "This ticket has already been assigned or is in progress."}), 400
+
+    user_id = session.get("user_id")
+    provider = Provider.query.filter_by(user_id=user_id).first() if user_id else Provider.query.first()
+    if not provider:
+        return jsonify({"error": "Provider profile not found."}), 404
+
+    job = Job(
+        complaint_id=complaint.id,
+        provider_id=provider.id,
+        status="Accepted",
+        notes=f"Accepted directly from Available Jobs roster by {provider.user.name if provider.user else 'Technician'}"
+    )
+    db.session.add(job)
+    complaint.status = "Assigned"
+    provider.active_jobs_count = (provider.active_jobs_count or 0) + 1
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": f"Ticket #{complaint.id} successfully accepted by {provider.user.name if provider.user else 'Technician'}.",
+        "job": job.to_dict()
+    })
+

@@ -185,6 +185,8 @@ class DualBasisComplaintClusterer:
                 clusters.append({
                     "cluster_name": cluster_name,
                     "basis": "Volume / Spatial Density",
+                    "clustering_engine": "DBSCAN",
+                    "explanation": "DBSCAN identifies spatially related complaint hotspots. It does not prove that complaints are duplicates.",
                     "building": common_building,
                     "category": common_category,
                     "centroid_lat": round(centroid[0], 5),
@@ -206,6 +208,7 @@ class DualBasisComplaintClusterer:
                     "severity_label": "🚨 Critical Hotspot" if has_emergency else f"⚡ High Volume ({len(cluster_complaints)} Reports)",
                     "color_code": color_code
                 })
+
 
         # 3. Facility Co-Occurrence Check for unclustered complaints:
         # If any building has 2 or more open complaints that weren't captured by DBSCAN, group them!
@@ -301,13 +304,21 @@ class DualBasisComplaintClusterer:
 
         return {
             "basis": "volume",
+            "engine": "DBSCAN Spatial Clustering",
+            "explanation": "DBSCAN identifies spatially related complaint hotspots. It does not prove that complaints are duplicates.",
             "clusters": clusters,
             "noise_ids": [c.get("id") for c in unclustered if c.get("predicted_urgency") != "Critical"]
         }
 
     def run_severity_clustering(self, complaints_data):
         if not complaints_data:
-            return {"basis": "severity", "clusters": [], "noise_ids": []}
+            return {
+                "basis": "severity",
+                "engine": "Facility Hazard Index",
+                "explanation": "Facility-level severity grouping prioritizing buildings by critical hazard index.",
+                "clusters": [],
+                "noise_ids": []
+            }
 
         building_groups = {}
         for c in complaints_data:
@@ -382,8 +393,11 @@ class DualBasisComplaintClusterer:
 
         return {
             "basis": "severity",
+            "engine": "Facility Hazard Index",
+            "explanation": "Facility-level severity grouping prioritizing buildings by critical hazard index.",
             "clusters": severity_clusters,
             "noise_ids": []
         }
 
 dbscan_clusterer = DualBasisComplaintClusterer()
+

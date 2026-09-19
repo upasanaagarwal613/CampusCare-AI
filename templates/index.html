@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CampusCare AI - Campus Complaint & Smart Facilities Intelligence Platform</title>
+  <title>CAMPUSNEX AI — Campus Operations Intelligence Platform</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Leaflet.js Real GPS OpenStreetMap Library -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -22,10 +23,13 @@
   <div id="view-auth-gate" class="auth-gate-screen">
     <div class="auth-gate-container">
       <div class="auth-header">
-        <div style="font-size: 34px;">⚡</div>
-        <h2>CampusCare AI</h2>
-        <p id="gate-header-sub">Campus Complaint & Facilities Intelligence Platform</p>
+        <div style="display: flex; justify-content: center; margin-bottom: 8px;">
+          <img src="/static/img/campusnex-logo.svg" alt="CAMPUSNEX AI Logo" style="width: 58px; height: 58px; filter: drop-shadow(0 4px 14px rgba(37, 99, 235, 0.4));">
+        </div>
+        <h2 style="font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #0f172a;">CAMPUSNEX <span style="color: var(--primary);">AI</span></h2>
+        <p id="gate-header-sub" style="font-size: 12.5px; font-weight: 600; color: var(--slate-600); margin-top: 2px;">Report. Match. Resolve. Improve.</p>
       </div>
+
 
       <div class="auth-body">
         
@@ -359,8 +363,11 @@
     <!-- Top Navigation Header -->
     <header class="app-header">
       <a href="/" class="brand">
-        <div class="brand-icon">⚡</div>
-        <span>CampusCare <span style="color: var(--primary);">AI</span></span>
+        <img src="/static/img/campusnex-logo.svg" alt="CAMPUSNEX AI Logo" class="brand-logo-img">
+        <div class="brand-title-wrap">
+          <span class="brand-text">CAMPUSNEX <span class="brand-accent">AI</span></span>
+          <span class="brand-tagline">Report. Match. Resolve. Improve.</span>
+        </div>
       </a>
       <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
         
@@ -392,37 +399,52 @@
     <!-- Main Content Wrapper -->
     <main class="main-wrapper">
 
-      <!-- Master KPI Stats Ribbon (Strictly Admin View) -->
-      <section class="stats-grid" id="stats-ribbon" style="display: none;">
-        <div class="stat-card">
+      <!-- Master KPI Stats Ribbon (Strictly Admin Operations Center View: 6 Polished Cards) -->
+      <section class="stats-grid-6" id="stats-ribbon" style="display: none;">
+        <div class="stat-card stat-card-glow">
           <div>
-            <div class="stat-label">Total Campus Complaints</div>
+            <div class="stat-label">Total Complaints</div>
             <div class="stat-value" id="stat-total">0</div>
           </div>
-          <div class="stat-icon" style="background: #eef2ff; color: var(--primary);">📋</div>
+          <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">📋</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-glow stat-warning">
           <div>
-            <div class="stat-label">Active / In-Queue</div>
-            <div class="stat-value" id="stat-active" style="color: var(--warning);">0</div>
+            <div class="stat-label">Active Jobs</div>
+            <div class="stat-value" id="stat-active" style="color: #d97706;">0</div>
           </div>
-          <div class="stat-icon" style="background: #fffbeb; color: var(--warning);">⏳</div>
+          <div class="stat-icon" style="background: #fffbeb; color: #d97706;">⏳</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-glow stat-success">
           <div>
-            <div class="stat-label">Resolution Rate</div>
-            <div class="stat-value" id="stat-resolved" style="color: var(--success);">0%</div>
+            <div class="stat-label">Resolved</div>
+            <div class="stat-value" id="stat-resolved" style="color: #16a34a;">0%</div>
           </div>
-          <div class="stat-icon" style="background: #ecfdf5; color: var(--success);">✅</div>
+          <div class="stat-icon" style="background: #ecfdf5; color: #16a34a;">✅</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-glow stat-danger">
           <div>
-            <div class="stat-label">AI Hotspot Clusters</div>
-            <div class="stat-value" id="stat-clusters" style="color: #dc2626;">0</div>
+            <div class="stat-label">Critical Issues</div>
+            <div class="stat-value" id="stat-critical" style="color: #dc2626;">0</div>
           </div>
-          <div class="stat-icon" style="background: #fef2f2; color: #dc2626;">📍</div>
+          <div class="stat-icon" style="background: #fef2f2; color: #dc2626;">🚨</div>
+        </div>
+        <div class="stat-card stat-card-glow">
+          <div>
+            <div class="stat-label">Active Providers</div>
+            <div class="stat-value" id="stat-providers" style="color: #0284c7;">0</div>
+          </div>
+          <div class="stat-icon" style="background: #f0f9ff; color: #0284c7;">👷</div>
+        </div>
+        <div class="stat-card stat-card-glow stat-warning">
+          <div>
+            <div class="stat-label">SLA Breaches</div>
+            <div class="stat-value" id="stat-sla" style="color: #ea580c;">0</div>
+          </div>
+          <div class="stat-icon" style="background: #fff7ed; color: #ea580c;">⚠️</div>
         </div>
       </section>
+
 
       <!-- ==================== ROLE 1: STUDENT PORTAL ==================== -->
       <div id="view-student" class="role-view">
@@ -522,6 +544,21 @@
                 <input type="hidden" id="comp-detected-lat" value="28.5450">
                 <input type="hidden" id="comp-detected-lng" value="77.1926">
 
+                <!-- Urgent / Hazard Priority Toggle -->
+                <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">🚨</span>
+                    <div>
+                      <strong style="font-size: 13px; color: #9f1239;">Urgent / Hazard Priority</strong>
+                      <div style="font-size: 11px; color: #be123c;">Toggle if immediate hazard (sparks, severe leak, structural crack)</div>
+                    </div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="comp-emergency-toggle" onchange="handleEmergencyToggle(this.checked)">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
                 <div class="form-group">
                   <label class="form-label">Issue Summary / Title</label>
                   <input type="text" id="comp-title" class="form-input" placeholder="e.g., Sparks from switchboard, pipe burst, WiFi down..." required oninput="triggerAIPreview()">
@@ -552,22 +589,68 @@
                   <textarea id="comp-desc" class="form-textarea" rows="3" placeholder="Describe the problem in detail (or record voice audio memo above)..." required oninput="triggerAIPreview()"></textarea>
                 </div>
 
-                <!-- Real-Time AI Inference Preview -->
-                <div class="ai-preview-panel" id="ai-preview-box" style="display: none;">
-                  <div class="ai-preview-header">
-                    <span>🤖 Real-Time NLP Classification Engine</span>
-                    <span id="ai-confidence-tag">Confidence: 94%</span>
+                <!-- Explicit Run AI Analysis Action Button -->
+                <div style="display: flex; gap: 8px; margin-top: 4px; margin-bottom: 10px;">
+                  <button type="button" class="btn-outline" style="flex: 1; border-color: #2563eb; color: #2563eb; font-weight: 700; font-size: 12.5px; padding: 7px 12px; background: rgba(37, 99, 235, 0.04);" onclick="runExplicitAIAnalysis()">
+                    🤖 Run AI Analysis
+                  </button>
+                </div>
+
+                <!-- Real-Time AI Inference Result Card -->
+                <div class="ai-result-card" id="ai-preview-box" style="display: none;">
+                  <div class="ai-card-header">
+                    <div class="ai-card-title">
+                      <span>🤖</span> Real-Time AI Diagnostic Engine
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span id="ai-confidence-tag" style="font-size: 12px; font-weight: 800; color: #0f172a;">88% Confidence</span>
+                      <button type="button" class="btn-why" onclick="openWhyExplainModal('complaint')">Why? ℹ️</button>
+                    </div>
                   </div>
-                  <div class="ai-prediction-badges">
-                    <span class="ai-badge ai-badge-category" id="ai-pred-category">🏷️ Electrical</span>
-                    <span class="ai-badge ai-badge-urgency" id="ai-pred-urgency">⚠️ Critical Urgency (Score: 0.95)</span>
+
+                  <div class="ai-card-meta-grid">
+                    <div class="ai-meta-box">
+                      <div class="ai-meta-box-label">Detected Category</div>
+                      <div class="ai-meta-box-val" id="ai-pred-category">⚡ Electrical</div>
+                    </div>
+                    <div class="ai-meta-box">
+                      <div class="ai-meta-box-label">Detected Severity</div>
+                      <div class="ai-meta-box-val" id="ai-pred-urgency">⚠️ High Urgency</div>
+                    </div>
+                    <div class="ai-meta-box">
+                      <div class="ai-meta-box-label">Required Skill</div>
+                      <div class="ai-meta-box-val" id="ai-pred-skill">Electrician</div>
+                    </div>
+                    <div class="ai-meta-box">
+                      <div class="ai-meta-box-label">Confidence Band</div>
+                      <div class="ai-meta-box-val" id="ai-confidence-level" style="font-size: 11.5px; color: #16a34a;">High confidence</div>
+                    </div>
                   </div>
-                  <div style="font-size: 12px; color: #0369a1; margin-top: 6px;" id="ai-keywords-line">
-                    <strong>Trigger Keywords:</strong> sparks, exposed wires
+
+                  <div class="confidence-bar-container">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--slate-600);">
+                      <span>Model Reliability Score</span>
+                      <span id="ai-confidence-pct">88%</span>
+                    </div>
+                    <div class="confidence-bar-track">
+                      <div class="confidence-bar-fill high" id="ai-confidence-bar" style="width: 88%;"></div>
+                    </div>
+                  </div>
+
+                  <div class="ai-action-box" id="ai-action-box">
+                    <span style="font-size: 16px;">💡</span>
+                    <div>
+                      <strong>Suggested Action:</strong>
+                      <span id="ai-suggested-action">Dispatch certified technician to inspect and isolate hazard.</span>
+                    </div>
+                  </div>
+
+                  <div style="font-size: 11.5px; color: #64748b; margin-top: 8px;" id="ai-keywords-line">
+                    <strong>Detected Indicators:</strong> sparks, loose wiring
                   </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="margin-top: 12px;">
                   <label class="form-label">Problem Category (Auto-Classified or Custom)</label>
                   <select id="comp-category-override" class="form-select">
                     <option value="Auto-Detect">Auto-Detect (AI Recommendation)</option>
@@ -646,16 +729,45 @@
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">🔧 Assigned Work Orders</h2>
-              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Upload Realistic Solution Photo Proof Upon Job Completion</div>
+        <!-- Provider Work Orders Subnav -->
+        <div class="portal-subnav" style="margin-bottom: 16px;">
+          <button type="button" class="portal-subnav-btn active" id="btn-prov-tab-active" onclick="switchProviderTab('active')">
+            🔨 My Active Jobs (<span id="prov-active-count">0</span>)
+          </button>
+          <button type="button" class="portal-subnav-btn" id="btn-prov-tab-available" onclick="switchProviderTab('available')">
+            ⚡ Available Jobs Queue (<span id="prov-available-count">0</span>)
+          </button>
+        </div>
+
+        <!-- Section A: Provider Active Jobs -->
+        <div id="prov-sec-active">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">🔧 Active Work Orders & Live Dispatch</h2>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Accept, reject, update dispatch status, and submit completion proof</div>
+              </div>
+              <button class="btn-outline" onclick="loadProviderProfileAndJobs()">🔄 Refresh Orders</button>
             </div>
-            <button class="btn-outline" onclick="loadProviderProfileAndJobs()">🔄 Refresh Orders</button>
+            <div id="provider-jobs-list">
+              <p style="color: var(--text-muted); font-size: 14px;">Loading assigned jobs...</p>
+            </div>
           </div>
-          <div id="provider-jobs-list">
-            <p style="color: var(--text-muted); font-size: 14px;">Loading assigned jobs...</p>
+        </div>
+
+        <!-- Section B: Provider Available Jobs Queue -->
+        <div id="prov-sec-available" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">⚡ Available Jobs Queue (Unassigned / Eligible)</h2>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Campus tickets matching your skill and proximity threshold — Claim directly</div>
+              </div>
+              <button class="btn-outline" onclick="loadProviderAvailableJobs()">🔄 Refresh Queue</button>
+            </div>
+            <div id="provider-available-jobs-list">
+              <p style="color: var(--text-muted); font-size: 14px;">Loading available jobs...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -692,22 +804,41 @@
         <!-- Admin Sub-Navigation Toolbar -->
         <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
           <button class="btn-admin-tab active" id="btn-admin-nav-map" onclick="showAdminTab('map')">
-            🗺️ Interactive Campus Map & Multi-Color Clustering
+            🗺️ Interactive Campus Map & Hotspots (DBSCAN)
+          </button>
+          <button class="btn-admin-tab" id="btn-admin-nav-recurring" onclick="showAdminTab('recurring')">
+            🔄 Recurring Problems
+          </button>
+          <button class="btn-admin-tab" id="btn-admin-nav-workload" onclick="showAdminTab('workload')">
+            👷 Provider Workload
+          </button>
+          <button class="btn-admin-tab" id="btn-admin-nav-pending" onclick="showAdminTab('pending')">
+            ⏳ Pending & Escalations
           </button>
           <button class="btn-admin-tab" id="btn-admin-nav-desk" onclick="showAdminTab('desk')">
-            ⚡ Master Complaints & User Reports
+            ⚡ Master Complaints & AI Dispatch
           </button>
           <button class="btn-admin-tab" id="btn-admin-nav-dir" onclick="showAdminTab('directory')">
             👥 Campus Providers & Directory
           </button>
           <button class="btn-admin-tab" id="btn-admin-nav-audit" onclick="showAdminTab('audit')">
-            📸 Solution Proof Audit & Admin Approval
+            📸 Solution Proof Audit
           </button>
         </div>
 
         <!-- TAB 1: REALISTIC MAP & MULTI-COLOR CLUSTERING -->
         <div id="admin-sec-map">
           
+          <!-- DBSCAN Explicit Explanation Banner -->
+          <div class="dbscan-disclaimer-box">
+            <span style="font-size: 22px;">ℹ️</span>
+            <div>
+              <strong style="color: #1e3a8a; display: block; font-size: 13px;">Spatial Hotspot Analysis (DBSCAN)</strong>
+              <span style="font-size: 12.5px; color: #334155;">DBSCAN identifies spatially related complaint hotspots. It does not prove that complaints are duplicates.</span>
+            </div>
+            <button type="button" class="btn-why" style="margin-left: auto;" onclick="openWhyExplainModal('dbscan')">Why DBSCAN? ℹ️</button>
+          </div>
+
           <div class="card">
             <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
               <div>
@@ -928,6 +1059,60 @@
 
         </div>
 
+        <!-- TAB: RECURRING PROBLEMS & HISTORICAL PATTERNS -->
+        <div id="admin-sec-recurring" style="display: none;">
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">🔄 Recurring Campus Facility Problems & Patterns</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  Identifies buildings experiencing repeated failures in the same category over time.
+                </p>
+              </div>
+              <button class="btn-outline" onclick="loadSystemStats()">🔄 Refresh Patterns</button>
+            </div>
+            <div id="admin-recurring-container">
+              <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">Loading recurring issue patterns...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: PROVIDER WORKLOAD & CAPACITY INTELLIGENCE -->
+        <div id="admin-sec-workload" style="display: none;">
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">👷 Technician Workload Distribution & Live Capacity</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  Real-time active jobs queue and capacity monitoring to prevent contractor bottlenecking.
+                </p>
+              </div>
+              <button class="btn-outline" onclick="loadSystemStats()">🔄 Refresh Workload</button>
+            </div>
+            <div id="admin-workload-container">
+              <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">Loading provider workload stats...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: PENDING ASSIGNMENTS & SLA ESCALATIONS -->
+        <div id="admin-sec-pending" style="display: none;">
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">⏳ Low-Score Provider Reviews & SLA Escalations</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  Cases where matcher score was &lt; 60 or SLA breached, requiring manual administrator intervention.
+                </p>
+              </div>
+              <button class="btn-outline" onclick="loadSystemStats()">🔄 Refresh Escalations</button>
+            </div>
+            <div id="admin-pending-container">
+              <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">Loading pending assignment queue...</p>
+            </div>
+          </div>
+        </div>
+
         <!-- TAB 4: PROBLEM-TO-SOLUTION AUDIT & ADMIN APPROVAL DESK -->
         <div id="admin-sec-audit" style="display: none;">
           <div class="card">
@@ -952,7 +1137,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-      CampusCare AI • Full-Stack Hackathon MVP • Built with Flask, SQLite, Scikit-Learn, Leaflet & Vanilla JS
+      CAMPUSNEX AI • Campus Operations Intelligence Platform • Report. Match. Resolve. Improve.
     </footer>
   </div>
 
@@ -1216,18 +1401,29 @@
     </div>
   </div>
 
-  <!-- Modal 7: Notifications Bell Modal -->
-  <div class="modal-overlay" id="modal-notifications">
-    <div class="modal-content" style="max-width: 500px;">
+  <!-- Modal 8: Explainable AI ('Why?') Decision Breakdown Modal -->
+  <div class="modal-overlay" id="modal-why-explain">
+    <div class="modal-content" style="max-width: 540px;">
       <div class="card-header">
-        <h2 class="card-title">🔔 Campus Alerts & Notifications</h2>
-        <button class="btn-outline" onclick="closeModal('modal-notifications')">✕</button>
+        <div>
+          <h2 class="card-title" id="why-modal-title">🤖 Explainable AI Rationale</h2>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="why-modal-subtitle">How this decision was calculated</p>
+        </div>
+        <button class="btn-outline" onclick="closeModal('modal-why-explain')">✕</button>
       </div>
-      <div id="notifications-list" style="max-height: 400px; overflow-y: auto;">
-        <p style="color: var(--text-muted); font-size: 14px; padding: 10px;">No new alerts.</p>
+
+      <div id="why-modal-body" style="padding: 10px 0; font-size: 13px; line-height: 1.6; color: #334155;">
+        <!-- Dynamic explainability content -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px;">
+        <button type="button" class="btn-primary" onclick="closeModal('modal-why-explain')">Understood</button>
       </div>
     </div>
   </div>
+
+  <!-- Global Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
 
   <!-- Frontend Logic -->
   <script src="/static/js/app.js"></script>

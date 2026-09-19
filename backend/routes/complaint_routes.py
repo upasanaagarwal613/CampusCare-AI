@@ -2,12 +2,13 @@ import os
 import uuid
 import random
 from datetime import datetime
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 from database.db import db
 from backend.models import Complaint, User, Notification, Job, ComplaintCluster, Provider
 from ml.classifier import nlp_classifier
 from ml.clustering import dbscan_clusterer, get_building_coords
-from ml.matcher import provider_matcher
+from ml.matcher import provider_matcher, AUTO_ASSIGN_THRESHOLD
+
 
 complaint_bp = Blueprint("complaints", __name__)
 
@@ -213,14 +214,16 @@ def create_complaint():
             scored.append((score_data["total_score"], p))
         
         scored.sort(key=lambda x: x[0], reverse=True)
-        top_score, best_provider = scored[0]
+        top_score, best_provider = scored[0] if scored else (0, None)
+        assign_threshold = getattr(current_app.config, "AUTO_ASSIGN_THRESHOLD", AUTO_ASSIGN_THRESHOLD) if current_app else AUTO_ASSIGN_THRESHOLD
 
-        if top_score >= 35:
+        if best_provider and top_score >= assign_threshold:
+
             assigned_job = Job(
                 complaint_id=complaint.id,
                 provider_id=best_provider.id,
                 status="Assigned",
-                notes=f"Auto-assigned by AI Matcher (Match Score: {top_score}/100)"
+                notes=f"Auto-assigned by AI Matcher (Match Score: {top_score}/100 >= {assign_threshold})"
             )
             db.session.add(assigned_job)
             complaint.status = "Assigned"
@@ -236,11 +239,35 @@ def create_complaint():
             s_notif = Notification(
                 user_id=complaint.student_id,
                 title=f"Technician Auto-Assigned: Ticket #{complaint.id}",
-                message=f"Technician {best_provider.user.name} ({best_provider.service_category}) has been dispatched to your issue.",
+                message=f"Technician {best_provider.user.name} ({best_provider.service_category}) has been dispatched to your issue (Compatibility Score: {top_score}%).",
                 notification_type="status_update"
             )
             db.session.add_all([p_notif, s_notif])
             db.session.commit()
+        else:
+            # Score < 60: Do NOT auto-assign; route to admin for review/reassignment
+            admins = User.query.filter_by(role="admin", college_name=college_name).all() or User.query.filter_by(role="admin").all()
+            for adm in admins:
+                adm_notif = Notification(
+                    user_id=adm.id,
+                    title=f"⚠️ Ticket #{complaint.id} Requires Assignment Review",
+                    message=f"Ticket #{complaint.id} ({complaint.category} in {complaint.building}) highest provider score was {top_score}/100 (below auto-dispatch threshold of {assign_threshold}). Needs manual review.",
+                    notification_type="assignment_review"
+                )
+                db.session.add(adm_notif)
+            db.session.commit()
+    else:
+        # No available providers on duty
+        admins = User.query.filter_by(role="admin", college_name=college_name).all() or User.query.filter_by(role="admin").all()
+        for adm in admins:
+            adm_notif = Notification(
+                user_id=adm.id,
+                title=f"⚠️ Ticket #{complaint.id} Awaiting Technician",
+                message=f"Ticket #{complaint.id} ({complaint.category} in {complaint.building}) has no available technicians on duty. Please assign manually.",
+                notification_type="assignment_review"
+            )
+            db.session.add(adm_notif)
+        db.session.commit()
 
     return jsonify({
         "message": "Complaint submitted and processed successfully.",

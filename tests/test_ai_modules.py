@@ -80,6 +80,79 @@ class TestAIModules(unittest.TestCase):
         self.assertIn("rating", breakdown)
         self.assertIn("zone", breakdown)
         self.assertEqual(breakdown["category"]["score"], 40)
+        self.assertTrue(ranked[0]["auto_assign_eligible"])
+        self.assertIn("explanation", ranked[0])
+
+    def test_eight_required_ml_examples(self):
+        # 1. Structural crack in ceiling
+        res1 = nlp_classifier.classify("The ceiling has a structural crack", "")
+        self.assertEqual(res1["predicted_category"], "Civil & Structural")
+        self.assertIn(res1["confidence_level"], ["High confidence", "Medium confidence"])
+
+        # 2. Roof leaking during rain
+        res2 = nlp_classifier.classify("The roof is leaking during rain", "")
+        self.assertEqual(res2["predicted_category"], "Civil & Structural")
+
+        # 3. Blocked toilet
+        res3 = nlp_classifier.classify("The toilet is blocked", "")
+        self.assertEqual(res3["predicted_category"], "Plumbing")
+        self.assertEqual(res3["predicted_urgency"], "High")
+
+        # 4. Burst pipe flooding bathroom
+        res4 = nlp_classifier.classify("Water pipe has burst and the bathroom is flooding", "")
+        self.assertEqual(res4["predicted_category"], "Plumbing")
+        self.assertEqual(res4["predicted_urgency"], "Critical")
+
+        # 5. Electrical switchboard sparking and exposed wires
+        res5 = nlp_classifier.classify("Electrical switchboard is sparking and wires are exposed", "")
+        self.assertEqual(res5["predicted_category"], "Electrical")
+        self.assertEqual(res5["predicted_urgency"], "Critical")
+
+        # 6. AC not cooling
+        res6 = nlp_classifier.classify("The AC is not cooling", "")
+        self.assertEqual(res6["predicted_category"], "HVAC")
+        self.assertEqual(res6["predicted_urgency"], "High")
+
+        # 7. Classroom chair broken
+        res7 = nlp_classifier.classify("The classroom chair is broken", "")
+        self.assertEqual(res7["predicted_category"], "Carpentry & Furniture")
+        self.assertEqual(res7["predicted_urgency"], "High")
+
+        # 8. Campus internet down
+        res8 = nlp_classifier.classify("The campus internet is down", "")
+        self.assertEqual(res8["predicted_category"], "Internet & IT")
+
+    def test_provider_auto_assignment_threshold(self):
+        complaint = {"category": "Electrical", "building": "Hostel Block A"}
+        # High matching provider (should be >= 60 and auto-assign eligible)
+        good_provider = {
+            "id": 1, "name": "Marcus Vance", "service_category": "Electrical",
+            "skills": ["Circuits"], "rating": 5.0, "active_jobs_count": 0,
+            "is_available": True, "location_zone": "Hostel Zone"
+        }
+        good_score = provider_matcher.score_provider(good_provider, complaint)
+        self.assertGreaterEqual(good_score["total_score"], 60)
+        self.assertTrue(good_score["auto_assign_eligible"])
+
+        # Completely mismatched provider (should be < 60 and not auto-assign eligible)
+        bad_provider = {
+            "id": 2, "name": "Elena Rostova", "service_category": "Sanitation",
+            "skills": ["Cleaning"], "rating": 3.0, "active_jobs_count": 4,
+            "is_available": True, "location_zone": "South Gate"
+        }
+        bad_score = provider_matcher.score_provider(bad_provider, complaint)
+        self.assertLess(bad_score["total_score"], 60)
+        self.assertFalse(bad_score["auto_assign_eligible"])
+
+    def test_dbscan_explanation_preserved(self):
+        sample = [
+            {"id": 1, "geo_lat": 28.545, "geo_long": 77.193, "category": "Plumbing", "building": "Hostel Block A"},
+            {"id": 2, "geo_lat": 28.5451, "geo_long": 77.1931, "category": "Plumbing", "building": "Hostel Block A"}
+        ]
+        res = dbscan_clusterer.run_clustering(sample, basis="volume")
+        self.assertIn("explanation", res)
+        self.assertIn("DBSCAN identifies spatially related complaint hotspots", res["explanation"])
 
 if __name__ == "__main__":
     unittest.main()
+
