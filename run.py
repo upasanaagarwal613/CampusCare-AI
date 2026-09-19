@@ -11,9 +11,11 @@ from backend import create_app
 app = create_app()
 
 if __name__ == "__main__":
+    host = "0.0.0.0"
+    port = int(os.environ.get("PORT", 5000))
     print("\n=======================================================")
-    print("  [*] CampusCare AI - Hackathon MVP Platform Running!  ")
-    print("  Local URL: http://127.0.0.1:5000                     ")
-    print("  Health API: http://127.0.0.1:5000/api/health         ")
+    print("  [*] CampusCare AI - Production/Dev Server Running!  ")
+    print(f"  Host: {host} | Port: {port}                         ")
+    print(f"  Health API: http://{host}:{port}/api/health        ")
     print("=======================================================\n")
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(host=host, port=port, debug=False)

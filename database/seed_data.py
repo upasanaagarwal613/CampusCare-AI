@@ -14,7 +14,8 @@ def seed_database():
     """Seeds realistic demo data for the hackathon presentation."""
     # Check if already seeded
     if User.query.first():
-        print("Database already contains records. Skipping seed.")
+        seed_regional_campuses_if_missing()
+        print("Database already contains records. Regional campuses verified.")
         return
 
     print("Seeding demo accounts and campus data...")
@@ -351,4 +352,212 @@ def seed_database():
     db.session.add_all([notif1, notif2, notif3])
     db.session.commit()
 
+    seed_regional_campuses_if_missing()
     print("Demo database seeding completed successfully!")
+
+
+def seed_regional_campuses_if_missing():
+    """Safely and idempotently seeds Mathura and Meerut campuses if not already present."""
+    try:
+        # 1. Mathura Admin, Student & Provider
+        mathura_admin = User.query.filter_by(email="admin.mathura@campus.edu").first()
+        if not mathura_admin:
+            mathura_admin = User(
+                name="Dr. R. K. Sharma (Mathura Admin)",
+                email="admin.mathura@campus.edu",
+                password_hash=generate_password_hash("admin123"),
+                role="admin",
+                phone="+91 98765 43210",
+                college_name="GLA University Mathura",
+                live_lat=27.4924,
+                live_lng=77.6737,
+                designation="Director of Campus Facilities",
+                staff_id_number="GLA-FAC-ADM-01"
+            )
+            db.session.add(mathura_admin)
+
+        mathura_student = User.query.filter_by(email="student.mathura@campus.edu").first()
+        if not mathura_student:
+            mathura_student = User(
+                name="Aman Gupta (Mathura Student)",
+                email="student.mathura@campus.edu",
+                password_hash=generate_password_hash("student123"),
+                role="student",
+                phone="+91 98765 11111",
+                college_name="GLA University Mathura",
+                live_lat=27.4924,
+                live_lng=77.6737
+            )
+            db.session.add(mathura_student)
+
+        mathura_tech_user = User.query.filter_by(email="tech.mathura@campus.edu").first()
+        if not mathura_tech_user:
+            mathura_tech_user = User(
+                name="Suresh Verma (Mathura Specialist)",
+                email="tech.mathura@campus.edu",
+                password_hash=generate_password_hash("provider123"),
+                role="provider",
+                phone="+91 98765 22222",
+                college_name="GLA University Mathura",
+                live_lat=27.4924,
+                live_lng=77.6737
+            )
+            db.session.add(mathura_tech_user)
+            db.session.flush()
+
+            mathura_prov = Provider(
+                user_id=mathura_tech_user.id,
+                service_category="Electrical",
+                skills=json.dumps(["Transformers", "High Voltage Panels", "Wiring", "Generator Sets"]),
+                rating=4.9,
+                total_jobs_completed=42,
+                active_jobs_count=1,
+                is_available=True,
+                current_lat=27.4924,
+                current_lng=77.6737
+            )
+            db.session.add(mathura_prov)
+
+        # 2. Meerut Admin, Student & Provider
+        meerut_admin = User.query.filter_by(email="admin.meerut@campus.edu").first()
+        if not meerut_admin:
+            meerut_admin = User(
+                name="Prof. Sunita Tyagi (Meerut Admin)",
+                email="admin.meerut@campus.edu",
+                password_hash=generate_password_hash("admin123"),
+                role="admin",
+                phone="+91 98765 33333",
+                college_name="MIET Meerut",
+                live_lat=28.9845,
+                live_lng=77.7064,
+                designation="Chief Warden & Facilities Dean",
+                staff_id_number="MIET-ADM-01"
+            )
+            db.session.add(meerut_admin)
+
+        meerut_student = User.query.filter_by(email="student.meerut@campus.edu").first()
+        if not meerut_student:
+            meerut_student = User(
+                name="Rohit Choudhary (Meerut Student)",
+                email="student.meerut@campus.edu",
+                password_hash=generate_password_hash("student123"),
+                role="student",
+                phone="+91 98765 44444",
+                college_name="MIET Meerut",
+                live_lat=28.9845,
+                live_lng=77.7064
+            )
+            db.session.add(meerut_student)
+
+        meerut_tech_user = User.query.filter_by(email="tech.meerut@campus.edu").first()
+        if not meerut_tech_user:
+            meerut_tech_user = User(
+                name="Dharmendra Singh (Meerut Specialist)",
+                email="tech.meerut@campus.edu",
+                password_hash=generate_password_hash("provider123"),
+                role="provider",
+                phone="+91 98765 55555",
+                college_name="MIET Meerut",
+                live_lat=28.9845,
+                live_lng=77.7064
+            )
+            db.session.add(meerut_tech_user)
+            db.session.flush()
+
+            meerut_prov = Provider(
+                user_id=meerut_tech_user.id,
+                service_category="Plumbing",
+                skills=json.dumps(["Water Supply", "Piping", "Drainage", "Motor Pumps"]),
+                rating=4.8,
+                total_jobs_completed=35,
+                active_jobs_count=1,
+                is_available=True,
+                current_lat=28.9845,
+                current_lng=77.7064
+            )
+            db.session.add(meerut_prov)
+
+        db.session.commit()
+
+        # 3. Mathura Complaints
+        if not Complaint.query.filter_by(college_name="GLA University Mathura").first():
+            m_b1_lat, m_b1_lon = get_building_coords("Hostel Block A", "GLA University Mathura")
+            comp_m1 = Complaint(
+                student_id=mathura_student.id if mathura_student else 1,
+                college_name="GLA University Mathura",
+                title="Main distribution electrical panel sparking loudly in Hostel Block A",
+                description="Major sparks emitting from the primary feeder panel on 1st floor corridor. Burning plastic smell and lights flickering throughout wing.",
+                building="Hostel Block A",
+                room_or_area="Wing 1 Corridor",
+                geo_lat=m_b1_lat,
+                geo_long=m_b1_lon,
+                predicted_category="Electrical",
+                confidence_score=0.96,
+                predicted_urgency="Critical",
+                urgency_score=0.94,
+                category="Electrical",
+                status="Submitted",
+                created_at=datetime.now(timezone.utc) - timedelta(hours=2)
+            )
+            comp_m2 = Complaint(
+                student_id=mathura_student.id if mathura_student else 1,
+                college_name="GLA University Mathura",
+                title="Complete power trip in Hostel Block A computer room",
+                description="All PCs and air conditioners abruptly tripped after voltage surge. Need emergency technician check.",
+                building="Hostel Block A",
+                room_or_area="Computer Lab Room 102",
+                geo_lat=m_b1_lat + 0.0001,
+                geo_long=m_b1_lon + 0.0001,
+                predicted_category="Electrical",
+                confidence_score=0.92,
+                predicted_urgency="Critical",
+                urgency_score=0.91,
+                category="Electrical",
+                status="Submitted",
+                created_at=datetime.now(timezone.utc) - timedelta(hours=1)
+            )
+            db.session.add_all([comp_m1, comp_m2])
+
+        # 4. Meerut Complaints
+        if not Complaint.query.filter_by(college_name="MIET Meerut").first():
+            me_b1_lat, me_b1_lon = get_building_coords("Hostel Block B", "MIET Meerut")
+            comp_me1 = Complaint(
+                student_id=meerut_student.id if meerut_student else 1,
+                college_name="MIET Meerut",
+                title="Overhead water tank pipeline fracture and flooding in Hostel Block B",
+                description="Main 3-inch PVC water line ruptured on 3rd floor terrace. Continuous deluge of water flooding stairwell and room 304.",
+                building="Hostel Block B",
+                room_or_area="3rd Floor Staircase & Terrace",
+                geo_lat=me_b1_lat,
+                geo_long=me_b1_lon,
+                predicted_category="Plumbing",
+                confidence_score=0.97,
+                predicted_urgency="Critical",
+                urgency_score=0.96,
+                category="Plumbing",
+                status="Submitted",
+                created_at=datetime.now(timezone.utc) - timedelta(hours=3)
+            )
+            comp_me2 = Complaint(
+                student_id=meerut_student.id if meerut_student else 1,
+                college_name="MIET Meerut",
+                title="Severe washroom drainage overflow in Hostel Block B",
+                description="Ground floor communal washroom drainage blocked completely, grey water backing up into hallway.",
+                building="Hostel Block B",
+                room_or_area="Ground Floor Common Washroom",
+                geo_lat=me_b1_lat + 0.0001,
+                geo_long=me_b1_lon + 0.0001,
+                predicted_category="Plumbing",
+                confidence_score=0.93,
+                predicted_urgency="High",
+                urgency_score=0.88,
+                category="Plumbing",
+                status="Submitted",
+                created_at=datetime.now(timezone.utc) - timedelta(hours=2)
+            )
+            db.session.add_all([comp_me1, comp_me2])
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Notice on regional seeding: {e}")
