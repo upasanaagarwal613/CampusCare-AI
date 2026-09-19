@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusCare AI - Campus Complaint & Smart Facilities Intelligence Platform</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet.js Real GPS OpenStreetMap Library -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- ==================== 1. STANDALONE LOGIN & REGISTRATION GATE ==================== -->
+  <div id="view-auth-gate" class="auth-gate-screen">
+    <div class="auth-gate-container">
+      <div class="auth-header">
+        <div style="font-size: 34px;">⚡</div>
+        <h2>CampusCare AI</h2>
+        <p id="gate-header-sub">Campus Complaint & Facilities Intelligence Platform</p>
+      </div>
+
+      <div class="auth-body">
+        
+        <!-- 3 Role Selection Tabs for Login -->
+        <div id="gate-role-tabs-container">
+          <label class="form-label" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-600); margin-bottom: 6px;">
+            Select Portal Login Type:
+          </label>
+          <div class="portal-role-selector" id="gate-role-selector">
+            <button type="button" class="btn-portal-tab active" id="tab-gate-user" onclick="selectGateRole('user')">
+              🎓 Student
+            </button>
+            <button type="button" class="btn-portal-tab" id="tab-gate-provider" onclick="selectGateRole('provider')">
+              🔧 Provider
+            </button>
+            <button type="button" class="btn-portal-tab" id="tab-gate-admin" onclick="selectGateRole('admin')">
+              🛡️ Admin
+            </button>
+          </div>
+        </div>
+
+        <!-- FORM A: LOGIN FORM -->
+        <div id="gate-view-login">
+          
+          <button type="button" class="btn-google" onclick="handleGoogleSignInGate()">
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.31 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.98 0 12s.46 3.84 1.26 5.42l4.02-3.15z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            Continue with Google Campus Account
+          </button>
+
+          <div class="auth-divider">
+            <span>OR LOGIN WITH EMAIL</span>
+          </div>
+
+          <form id="gate-form-login" onsubmit="handleGateLogin(event)">
+            <input type="hidden" id="gate-selected-role" value="user">
+            
+            <div class="form-group">
+              <label class="form-label">Campus Email</label>
+              <input type="email" id="gate-login-email" class="form-input" placeholder="student@campus.edu" required>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">Password</label>
+                <a href="javascript:void(0)" onclick="switchGateView('forgot')" style="font-size: 12px; color: var(--primary); font-weight: 600; text-decoration: none;">Forgot Password?</a>
+              </div>
+              <input type="password" id="gate-login-password" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 11px; margin-top: 4px;" id="btn-gate-submit">
+              Sign In to Portal
+            </button>
+          </form>
+
+          <div style="text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+            Don't have an account? 
+            <a href="javascript:void(0)" onclick="switchGateView('register')" style="color: var(--primary); font-weight: 700; text-decoration: none;">Register Now</a>
+          </div>
+
+          <!-- Quick Seeded Credentials Box for Evaluation -->
+          <div style="background: var(--slate-50); border: 1px dashed var(--border); border-radius: 8px; padding: 10px; margin-top: 16px; font-size: 11px; color: var(--slate-600);">
+            <strong>Demo Quick Credentials:</strong><br>
+            Student: <code>student@campus.edu</code> (student123)<br>
+            Provider: <code>sparky@campus.edu</code> (provider123)<br>
+            Admin: <code>admin@campus.edu</code> (admin123)
+          </div>
+        </div>
+
+        <!-- FORM B: REGISTER FORM -->
+        <div id="gate-view-register" style="display: none;">
+          <form id="gate-form-register" onsubmit="handleGateRegister(event)">
+            
+            <div class="form-group">
+              <label class="form-label">College / University Institution (Pan-India)</label>
+              <select id="gate-reg-college" class="form-select" onchange="toggleCustomCollegeInput(this.value)" required>
+                <optgroup label="📍 North India">
+                  <option value="IIT Delhi Main Campus" selected>Indian Institute of Technology (IIT) Delhi</option>
+                  <option value="Delhi Technological University (DTU)">Delhi Technological University (DTU)</option>
+                  <option value="Netaji Subhas University of Technology (NSUT)">Netaji Subhas University of Technology (NSUT)</option>
+                  <option value="Indraprastha Institute of Information Technology (IIIT) Delhi">IIIT Delhi</option>
+                  <option value="National Institute of Technology (NIT) Delhi">NIT Delhi</option>
+                  <option value="Indian Institute of Technology (IIT) Kanpur">IIT Kanpur (UP)</option>
+                  <option value="Indian Institute of Technology (IIT) Roorkee">IIT Roorkee (Uttarakhand)</option>
+                  <option value="IIT (BHU) Varanasi">IIT (BHU) Varanasi (UP)</option>
+                  <option value="Panjab University (PU) Chandigarh">Panjab University Chandigarh</option>
+                  <option value="Punjab Engineering College (PEC)">PEC Chandigarh</option>
+                  <option value="National Institute of Technology (NIT) Kurukshetra">NIT Kurukshetra (Haryana)</option>
+                  <option value="Thapar Institute of Engineering and Technology">Thapar Institute Patiala</option>
+                  <option value="Aligarh Muslim University (AMU)">AMU Aligarh</option>
+                  <option value="Jamia Millia Islamia (JMI)">Jamia Millia Islamia New Delhi</option>
+                </optgroup>
+                <optgroup label="📍 West India">
+                  <option value="Indian Institute of Technology (IIT) Bombay">IIT Bombay (Mumbai, Maharashtra)</option>
+                  <option value="Veermata Jijabai Technological Institute (VJTI)">VJTI Mumbai (Maharashtra)</option>
+                  <option value="COEP Technological University">COEP Pune (Maharashtra)</option>
+                  <option value="Birla Institute of Technology and Science (BITS) Pilani">BITS Pilani (Rajasthan)</option>
+                  <option value="Malaviya National Institute of Technology (MNIT) Jaipur">MNIT Jaipur (Rajasthan)</option>
+                  <option value="Sardar Vallabhbhai National Institute of Technology (SVNIT)">SVNIT Surat (Gujarat)</option>
+                  <option value="Indian Institute of Technology (IIT) Gandhinagar">IIT Gandhinagar (Gujarat)</option>
+                  <option value="BITS Pilani K.K. Birla Goa Campus">BITS Goa</option>
+                </optgroup>
+                <optgroup label="📍 South India">
+                  <option value="Indian Institute of Technology (IIT) Madras">IIT Madras (Chennai, Tamil Nadu)</option>
+                  <option value="Indian Institute of Science (IISc) Bengaluru">IISc Bengaluru (Karnataka)</option>
+                  <option value="National Institute of Technology (NIT) Tiruchirappalli">NIT Trichy (Tamil Nadu)</option>
+                  <option value="National Institute of Technology Karnataka (NITK) Surathkal">NIT Surathkal (Karnataka)</option>
+                  <option value="Anna University Chennai">Anna University (Chennai, Tamil Nadu)</option>
+                  <option value="Vellore Institute of Technology (VIT)">VIT Vellore (Tamil Nadu)</option>
+                  <option value="Manipal Institute of Technology (MIT)">Manipal Tech (Karnataka)</option>
+                  <option value="Indian Institute of Technology (IIT) Hyderabad">IIT Hyderabad (Telangana)</option>
+                  <option value="International Institute of Information Technology (IIIT) Hyderabad">IIIT Hyderabad (Telangana)</option>
+                  <option value="National Institute of Technology (NIT) Calicut">NIT Calicut (Kerala)</option>
+                  <option value="National Institute of Technology (NIT) Warangal">NIT Warangal (Telangana)</option>
+                  <option value="BITS Pilani Hyderabad Campus">BITS Hyderabad</option>
+                </optgroup>
+                <optgroup label="📍 East & North-East India">
+                  <option value="Indian Institute of Technology (IIT) Kharagpur">IIT Kharagpur (West Bengal)</option>
+                  <option value="Jadavpur University">Jadavpur University Kolkata (West Bengal)</option>
+                  <option value="Indian Institute of Engineering Science and Technology (IIEST) Shibpur">IIEST Shibpur (West Bengal)</option>
+                  <option value="National Institute of Technology (NIT) Rourkela">NIT Rourkela (Odisha)</option>
+                  <option value="Indian Institute of Technology (IIT) Bhubaneswar">IIT Bhubaneswar (Odisha)</option>
+                  <option value="Indian Institute of Technology (IIT) Guwahati">IIT Guwahati (Assam)</option>
+                  <option value="National Institute of Technology (NIT) Silchar">NIT Silchar (Assam)</option>
+                  <option value="IIT (ISM) Dhanbad">IIT Dhanbad (Jharkhand)</option>
+                  <option value="Birla Institute of Technology (BIT) Mesra">BIT Mesra Ranchi</option>
+                  <option value="National Institute of Technology (NIT) Patna">NIT Patna (Bihar)</option>
+                </optgroup>
+                <optgroup label="📍 Central India">
+                  <option value="Indian Institute of Technology (IIT) Indore">IIT Indore (Madhya Pradesh)</option>
+                  <option value="Maulana Azad National Institute of Technology (MANIT) Bhopal">MANIT Bhopal (Madhya Pradesh)</option>
+                  <option value="Visvesvaraya National Institute of Technology (VNIT) Nagpur">VNIT Nagpur (Maharashtra / Central)</option>
+                  <option value="National Institute of Technology (NIT) Raipur">NIT Raipur (Chhattisgarh)</option>
+                  <option value="IIITDM Jabalpur">IIITDM Jabalpur (Madhya Pradesh)</option>
+                </optgroup>
+                <optgroup label="🌍 Global Universities (North America, UK, Europe, Asia)">
+                  <option value="Massachusetts Institute of Technology (MIT)">MIT - Massachusetts Institute of Technology (USA)</option>
+                  <option value="Stanford University">Stanford University (California, USA)</option>
+                  <option value="Harvard University">Harvard University (Massachusetts, USA)</option>
+                  <option value="University of Oxford">University of Oxford (United Kingdom)</option>
+                  <option value="University of Cambridge">University of Cambridge (United Kingdom)</option>
+                  <option value="Imperial College London">Imperial College London (UK)</option>
+                  <option value="ETH Zurich (Swiss Federal Institute of Technology)">ETH Zurich (Switzerland)</option>
+                  <option value="National University of Singapore (NUS)">NUS - National University of Singapore</option>
+                  <option value="Nanyang Technological University (NTU)">NTU Singapore</option>
+                  <option value="University of Toronto">University of Toronto (Canada)</option>
+                  <option value="Technical University of Munich (TUM)">TU Munich (Germany)</option>
+                  <option value="University of Tokyo">University of Tokyo (Japan)</option>
+                  <option value="University of Melbourne">University of Melbourne (Australia)</option>
+                  <option value="University of California, Berkeley">UC Berkeley (California, USA)</option>
+                  <option value="Carnegie Mellon University">Carnegie Mellon University (USA)</option>
+                </optgroup>
+                <optgroup label="➕ Custom University (Worldwide Any Location)">
+                  <option value="__custom__">➕ Other / Enter ANY College or Campus Worldwide...</option>
+                </optgroup>
+              </select>
+
+              <!-- Dynamic Custom College Input Section -->
+              <div id="gate-reg-custom-wrap" style="display: none; background: rgba(99, 102, 241, 0.08); border: 1px dashed #6366f1; border-radius: 8px; padding: 12px; margin-top: 8px;">
+                <label class="form-label" style="color: #a5b4fc; font-size: 12px; margin-bottom: 4px;">Custom College Name & Worldwide Campus Location</label>
+                <input type="text" id="gate-reg-custom-name" class="form-input" placeholder="e.g. Govt College of Engg Pune, or Boston University, or Any Campus Worldwide" style="margin-bottom: 8px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" id="gate-reg-custom-city" class="form-input" placeholder="City, State / Country (e.g. Pune, India or Boston, USA)" style="flex: 1;">
+                  <button type="button" class="btn btn-secondary" onclick="detectCustomCollegeGPS()" style="font-size: 11px; padding: 7px 12px; white-space: nowrap;">
+                    📍 Detect Live GPS
+                  </button>
+                </div>
+                <input type="hidden" id="gate-reg-custom-lat" value="">
+                <input type="hidden" id="gate-reg-custom-lng" value="">
+                <div id="gate-reg-custom-gps-status" style="font-size: 11px; color: #10b981; margin-top: 6px; display: none;"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="gate-reg-name" class="form-input" placeholder="e.g. Maya Lin" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Campus Email</label>
+              <input type="email" id="gate-reg-email" class="form-input" placeholder="e.g. maya@campus.edu" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="gate-reg-password" class="form-input" placeholder="Min 4 chars" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="text" id="gate-reg-phone" class="form-input" placeholder="+91 98765 43210">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Account Role</label>
+              <select id="gate-reg-role" class="form-select" onchange="toggleGateRoleFields()">
+                <option value="student">Student / Campus Resident</option>
+                <option value="provider">Service Provider / Maintenance Technician</option>
+                <option value="admin">Administrator / Faculty Operations</option>
+              </select>
+            </div>
+
+            <!-- Student ID Proof Fields -->
+            <div id="gate-reg-student-fields" style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+              <div class="form-group" style="margin-bottom: 10px;">
+                <label class="form-label">Student Roll / ID Number</label>
+                <input type="text" id="gate-reg-student-idnum" class="form-input" placeholder="e.g. 2024CSB1042">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">🪪 Student ID Card Photo Proof</label>
+                <input type="file" id="gate-reg-student-card-file" accept="image/*" class="form-input" onchange="previewStudentCardProof(event)">
+                <div id="gate-reg-student-card-preview" style="display: none; margin-top: 8px;">
+                  <img id="gate-reg-student-card-thumb" src="" style="max-height: 80px; border-radius: 6px; border: 1px solid var(--border);" alt="ID Preview">
+                </div>
+              </div>
+            </div>
+
+            <!-- Provider Multi-Specialty Fields -->
+            <div id="gate-reg-provider-fields" style="display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+              <label class="form-label" style="margin-bottom: 6px; font-weight: 700;">Service Specialties (Select All That Apply):</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" name="gate-reg-specs" value="Electrical" checked> ⚡ Electrical
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" name="gate-reg-specs" value="Plumbing"> 🔧 Plumbing
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" name="gate-reg-specs" value="HVAC"> ❄️ HVAC / AC
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" name="gate-reg-specs" value="Internet & IT"> 💻 Internet & IT
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" name="gate-reg-specs" value="Carpentry & Furniture"> 🪚 Carpentry
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" name="gate-reg-specs" value="Sanitation & Cleaning"> 🧹 Sanitation
+                </label>
+              </div>
+            </div>
+
+            <!-- Admin Verification Fields -->
+            <div id="gate-reg-admin-fields" style="display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+              <div class="form-group" style="margin-bottom: 10px;">
+                <label class="form-label">Official Designation / Post</label>
+                <input type="text" id="gate-reg-admin-post" class="form-input" placeholder="e.g. Director of Facilities, Dean, Chief Warden">
+              </div>
+              <div class="form-group" style="margin-bottom: 10px;">
+                <label class="form-label">Staff / Faculty ID Number</label>
+                <input type="text" id="gate-reg-admin-staffid" class="form-input" placeholder="e.g. FAC-2024-098">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">🪪 Teacher / Staff ID Card Proof (Upload)</label>
+                <input type="file" id="gate-reg-admin-card-file" accept="image/*" class="form-input" onchange="previewAdminCardProof(event)">
+                <div id="gate-reg-card-preview" style="display: none; margin-top: 8px;">
+                  <img id="gate-reg-card-thumb" src="" style="max-height: 80px; border-radius: 6px; border: 1px solid var(--border);" alt="ID Card Proof Preview">
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 11px; margin-top: 6px;" id="btn-gate-reg-submit">
+              Create Account & Verify ID
+            </button>
+          </form>
+
+          <div style="text-align: center; margin-top: 14px; font-size: 13px; color: var(--text-muted);">
+            Already have an account? 
+            <a href="javascript:void(0)" onclick="switchGateView('login')" style="color: var(--primary); font-weight: 700; text-decoration: none;">Sign In</a>
+          </div>
+        </div>
+
+        <!-- FORM C: FORGOT PASSWORD -->
+        <div id="gate-view-forgot" style="display: none;">
+          <div id="gate-forgot-step-request">
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+              Enter your registered campus email to receive a secure 6-digit verification code.
+            </p>
+            <form id="gate-form-send-otp" onsubmit="handleGateSendOtp(event)">
+              <div class="form-group">
+                <label class="form-label">Campus Email</label>
+                <input type="email" id="gate-forgot-email" class="form-input" placeholder="student@campus.edu" required>
+              </div>
+              <button type="submit" class="btn-primary" style="width: 100%;" id="btn-gate-otp-submit">
+                Send 6-Digit OTP Code
+              </button>
+            </form>
+          </div>
+
+          <div id="gate-forgot-step-verify" style="display: none;">
+            <div class="otp-callout">
+              <span><strong>🔐 OTP Generated:</strong> Use code below:</span>
+              <div class="otp-code-display" id="gate-otp-display-value">000000</div>
+            </div>
+
+            <form id="gate-form-reset-pw" onsubmit="handleGateVerifyAndReset(event)">
+              <div class="form-group">
+                <label class="form-label">Enter 6-Digit OTP Code</label>
+                <input type="text" id="gate-reset-otp" class="form-input" placeholder="6-digit OTP" maxlength="6" required style="font-size: 18px; letter-spacing: 3px; text-align: center;">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="gate-reset-new-password" class="form-input" placeholder="Enter new password (min 4 chars)" required>
+              </div>
+
+              <button type="submit" class="btn-primary" style="width: 100%;" id="btn-gate-reset-submit">
+                🔒 Verify OTP & Update Password
+              </button>
+            </form>
+          </div>
+
+          <div style="text-align: center; margin-top: 14px; font-size: 13px; color: var(--text-muted);">
+            Remembered password? 
+            <a href="javascript:void(0)" onclick="switchGateView('login')" style="color: var(--primary); font-weight: 700; text-decoration: none;">Back to Login</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. AUTHENTICATED PORTAL CONTAINER ==================== -->
+  <div id="app-authenticated-content" style="display: none;">
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <a href="/" class="brand">
+        <div class="brand-icon">⚡</div>
+        <span>CampusCare <span style="color: var(--primary);">AI</span></span>
+      </a>
+      <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        
+        <!-- Active Persona Pill -->
+        <div class="nav-user-pill" id="header-user-pill">
+          <div class="user-avatar" id="header-avatar">U</div>
+          <span id="header-user-info">Logged In User</span>
+        </div>
+
+        <!-- Live GPS Beacon Indicator -->
+        <div id="header-gps-pill" style="font-size: 11px; background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 4px 8px; border-radius: 9999px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+          <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+          <span id="header-gps-text">GPS: Live</span>
+        </div>
+
+        <!-- Alerts Bell -->
+        <button class="btn-outline" onclick="openNotificationsModal()" style="position: relative;">
+          🔔 Alerts
+          <span id="notif-count-badge" style="display:none; position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border-radius: 9999px; font-size: 11px; padding: 2px 6px;">0</span>
+        </button>
+
+        <!-- Log Out Button -->
+        <button class="btn-logout" onclick="handleLogout()">
+          🚪 Log Out
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+
+      <!-- Master KPI Stats Ribbon (Strictly Admin View) -->
+      <section class="stats-grid" id="stats-ribbon" style="display: none;">
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Total Campus Complaints</div>
+            <div class="stat-value" id="stat-total">0</div>
+          </div>
+          <div class="stat-icon" style="background: #eef2ff; color: var(--primary);">📋</div>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Active / In-Queue</div>
+            <div class="stat-value" id="stat-active" style="color: var(--warning);">0</div>
+          </div>
+          <div class="stat-icon" style="background: #fffbeb; color: var(--warning);">⏳</div>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Resolution Rate</div>
+            <div class="stat-value" id="stat-resolved" style="color: var(--success);">0%</div>
+          </div>
+          <div class="stat-icon" style="background: #ecfdf5; color: var(--success);">✅</div>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">AI Hotspot Clusters</div>
+            <div class="stat-value" id="stat-clusters" style="color: #dc2626;">0</div>
+          </div>
+          <div class="stat-icon" style="background: #fef2f2; color: #dc2626;">📍</div>
+        </div>
+      </section>
+
+      <!-- ==================== ROLE 1: STUDENT PORTAL ==================== -->
+      <div id="view-student" class="role-view">
+        
+        <!-- Student Personalized Profile Banner (Strictly 0 Initialized) -->
+        <div class="card" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">🎓 REGISTERED STUDENT</span>
+                <span id="student-banner-college" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #7dd3fc; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">IIT Delhi Main Campus</span>
+                <span id="student-banner-email" style="font-size: 13px; opacity: 0.85;">student@campus.edu</span>
+              </div>
+              <h2 style="font-size: 22px; font-weight: 800; margin-top: 6px;" id="student-banner-name">Student Name</h2>
+              <div style="opacity: 0.85; font-size: 13px; margin-top: 2px;">CampusCare AI Smart Complaint Desk • Verified Student Portal</div>
+            </div>
+            <div style="display: flex; gap: 24px;">
+              <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 800; color: #60a5fa;" id="student-stat-filed">0</div>
+                <div style="font-size: 12px; opacity: 0.85;">Complaints Filed</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 800; color: #fbbf24;" id="student-stat-active">0</div>
+                <div style="font-size: 12px; opacity: 0.85;">In Progress</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 800; color: #34d399;" id="student-stat-resolved">0</div>
+                <div style="font-size: 12px; opacity: 0.85;">Resolved Proofs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-grid-2">
+          
+          <!-- Left: Complaint Filing Form with Mandatory Live Camera & Voice Memo -->
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">📝 Report Campus Issue</h2>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Live Camera Photo is Mandatory • Voice Audio Memo Supported</div>
+                </div>
+                <button type="button" class="btn-outline" style="font-size: 11px;" onclick="detectStudentLiveGps()">
+                  📍 Detect My GPS Location
+                </button>
+              </div>
+
+              <!-- Location GPS Banner -->
+              <div id="student-gps-status-box" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 12px;">
+                📍 <strong>Live GPS Detection:</strong> <span id="student-gps-coords-display">28.5450° N, 77.1926° E (Campus Hostel Zone)</span>
+              </div>
+
+              <!-- Mandatory Live Camera & Voice Toolbar -->
+              <div class="multimodal-toolbar" style="margin-bottom: 14px;">
+                <button type="button" class="btn-primary" onclick="openLiveCameraViewfinder()" style="font-size: 13px; background: #0284c7;">
+                  📸 Open Live Camera (Mandatory Photo)
+                </button>
+                <button type="button" class="btn-voice" id="btn-voice-recorder" onclick="toggleVoiceAudioRecording()">
+                  <span id="voice-recorder-icon">🎙️</span>
+                  <span id="voice-recorder-label">Record Voice Memo (Audio)</span>
+                </button>
+                <input type="file" id="comp-image-file" accept="image/*" capture="environment" style="display: none;" onchange="handleImagePreview(event)">
+              </div>
+
+              <!-- Audio Recording Preview Bar -->
+              <div id="audio-recording-container" style="display: none; margin-bottom: 12px;">
+                <div class="voice-recorder-bar">
+                  <span class="recording-timer" id="recording-timer-display">🔴 Recording: 00:05</span>
+                  <button type="button" class="btn-outline" style="font-size: 11px; border-color: #ef4444; color: #ef4444;" onclick="stopVoiceAudioRecording()">
+                    ⏹️ Stop & Save Audio
+                  </button>
+                </div>
+              </div>
+
+              <!-- Saved Voice Memo Player -->
+              <div id="audio-player-container" style="display: none; margin-bottom: 12px; background: #f1f5f9; padding: 10px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 12px; font-weight: 700; color: var(--slate-700);">🎙️ Attached Voice Audio Memo:</span>
+                  <button type="button" style="background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer;" onclick="discardVoiceAudioMemo()">✕ Discard</button>
+                </div>
+                <audio id="voice-memo-player" controls style="width: 100%; height: 36px;"></audio>
+              </div>
+
+              <!-- Live Photo Preview & Authenticity Badge -->
+              <div id="image-preview-container" style="display: none; margin-bottom: 12px;">
+                <div class="image-preview-wrapper">
+                  <img id="image-preview-thumb" class="image-preview-thumb" src="" alt="Live Incident Photo">
+                  <button type="button" class="btn-remove-thumb" onclick="removeImageUpload()">✕</button>
+                </div>
+                <div id="photo-auth-badge" style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 6px 12px; border-radius: 6px; font-size: 12px; margin-top: 6px; font-weight: 600;">
+                  🛡️ AI Authenticity Verification: 98.8% Genuine Live Camera Capture (PASSED)
+                </div>
+              </div>
+              
+              <form id="complaint-form" onsubmit="handleComplaintSubmit(event)">
+                <input type="hidden" id="comp-detected-lat" value="28.5450">
+                <input type="hidden" id="comp-detected-lng" value="77.1926">
+
+                <div class="form-group">
+                  <label class="form-label">Issue Summary / Title</label>
+                  <input type="text" id="comp-title" class="form-input" placeholder="e.g., Sparks from switchboard, pipe burst, WiFi down..." required oninput="triggerAIPreview()">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Campus Facility / Building</label>
+                    <select id="comp-building" class="form-select" required>
+                      <option value="Hostel Block A">Hostel Block A</option>
+                      <option value="Hostel Block B">Hostel Block B</option>
+                      <option value="Central Library">Central Library</option>
+                      <option value="Engineering Hall">Engineering Hall</option>
+                      <option value="Science Complex">Science Complex</option>
+                      <option value="Dining Center">Dining Center</option>
+                      <option value="Sports Complex">Sports Complex</option>
+                      <option value="Administrative Block">Administrative Block</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Room / Floor / Area</label>
+                    <input type="text" id="comp-room" class="form-input" placeholder="e.g., Room 304, 2nd Fl Restroom" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Detailed Description</label>
+                  <textarea id="comp-desc" class="form-textarea" rows="3" placeholder="Describe the problem in detail (or record voice audio memo above)..." required oninput="triggerAIPreview()"></textarea>
+                </div>
+
+                <!-- Real-Time AI Inference Preview -->
+                <div class="ai-preview-panel" id="ai-preview-box" style="display: none;">
+                  <div class="ai-preview-header">
+                    <span>🤖 Real-Time NLP Classification Engine</span>
+                    <span id="ai-confidence-tag">Confidence: 94%</span>
+                  </div>
+                  <div class="ai-prediction-badges">
+                    <span class="ai-badge ai-badge-category" id="ai-pred-category">🏷️ Electrical</span>
+                    <span class="ai-badge ai-badge-urgency" id="ai-pred-urgency">⚠️ Critical Urgency (Score: 0.95)</span>
+                  </div>
+                  <div style="font-size: 12px; color: #0369a1; margin-top: 6px;" id="ai-keywords-line">
+                    <strong>Trigger Keywords:</strong> sparks, exposed wires
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Problem Category (Auto-Classified or Custom)</label>
+                  <select id="comp-category-override" class="form-select">
+                    <option value="Auto-Detect">Auto-Detect (AI Recommendation)</option>
+                    <option value="Electrical">⚡ Electrical</option>
+                    <option value="Plumbing">🔧 Plumbing & Water</option>
+                    <option value="HVAC">❄️ HVAC / Air Conditioning</option>
+                    <option value="Internet & IT">🌐 Internet & IT</option>
+                    <option value="Carpentry & Furniture">🪚 Carpentry & Furniture</option>
+                    <option value="Sanitation & Cleaning">🧹 Sanitation & Cleaning</option>
+                    <option value="Safety & Security">🚨 Safety & Security Hazard</option>
+                    <option value="Civil & Structural">🏛️ Civil & Structural</option>
+                    <option value="Elevator & Mechanical">🛗 Elevator & Mechanical</option>
+                    <option value="Lab Equipment">🔬 Lab & Research Equipment</option>
+                  </select>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px;" id="btn-submit-complaint">
+                  🚀 Submit Complaint (With Live Photo & Audio)
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right: Student's Personal Complaint Tracker (Strict Privacy) -->
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">📋 My Personal Complaint Tickets</h2>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Strictly Private • Only Your Filed Tickets Are Displayed</div>
+                </div>
+                <button class="btn-outline" onclick="loadStudentComplaints()">🔄 Refresh</button>
+              </div>
+              <div id="student-complaints-list">
+                <p style="color: var(--text-muted); font-size: 14px;">Loading tickets...</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================== ROLE 2: SERVICE PROVIDER PORTAL ==================== -->
+      <div id="view-provider" class="role-view">
+        <div class="card" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">🔧 SERVICE TECHNICIAN</span>
+                <span id="prov-header-college" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #7dd3fc; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">IIT Delhi</span>
+                <span id="prov-header-email" style="font-size: 13px; opacity: 0.85;">provider@campus.edu</span>
+              </div>
+              <h2 style="font-size: 22px; font-weight: 800; margin-top: 6px;" id="prov-header-name">Provider Name</h2>
+              <div style="opacity: 0.85; font-size: 13px; margin-top: 2px;" id="prov-header-cat">Specialties: General Maintenance</div>
+              <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn-outline" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white; font-size: 12px;" onclick="detectProviderLiveGps()">
+                  📍 Update My On-Duty Live GPS
+                </button>
+                <span id="prov-gps-display" style="font-size: 12px; opacity: 0.9;">📍 Location: 28.5450° N, 77.1926° E (Campus Zone)</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 20px;">
+              <div style="text-align: center;">
+                <div style="font-size: 22px; font-weight: 800; color: #fbbf24;" id="prov-stat-rating">⭐ 5.0</div>
+                <div style="font-size: 12px; opacity: 0.8;">Student Rating</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 22px; font-weight: 800;" id="prov-stat-completed">0</div>
+                <div style="font-size: 12px; opacity: 0.8;">Jobs Completed</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 22px; font-weight: 800; color: #60a5fa;" id="prov-stat-active">0</div>
+                <div style="font-size: 12px; opacity: 0.8;">Active Work Orders</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">🔧 Assigned Work Orders</h2>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Upload Realistic Solution Photo Proof Upon Job Completion</div>
+            </div>
+            <button class="btn-outline" onclick="loadProviderProfileAndJobs()">🔄 Refresh Orders</button>
+          </div>
+          <div id="provider-jobs-list">
+            <p style="color: var(--text-muted); font-size: 14px;">Loading assigned jobs...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== ROLE 3: ADMINISTRATION PORTAL ==================== -->
+      <div id="view-admin" class="role-view">
+        
+        <!-- Admin Dynamic Verified Profile Banner -->
+        <div class="card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">🛡️ VERIFIED OPERATIONS ADMIN</span>
+                <span id="admin-header-college" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #7dd3fc; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">IIT Delhi Main Campus</span>
+                <span id="admin-header-email" style="font-size: 13px; opacity: 0.85;">admin@campus.edu</span>
+              </div>
+              <h2 style="font-size: 22px; font-weight: 800; margin-top: 6px;" id="admin-header-name">Administrator Name</h2>
+              <div style="opacity: 0.9; font-size: 14px; margin-top: 2px;" id="admin-header-post">Official Designation: Facilities Operations</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+              <div style="background: rgba(255,255,255,0.08); padding: 8px 14px; border-radius: 8px; font-size: 12px;">
+                <div style="opacity: 0.7;">Staff / Teacher ID:</div>
+                <strong id="admin-header-staffid" style="font-size: 14px; color: #38bdf8;">FAC-ADMIN-01</strong>
+              </div>
+              <div id="admin-header-cardproof-container">
+                <button type="button" class="btn-outline" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: white; font-size: 12px;" onclick="viewAdminIdCardModal()">
+                  🪪 View ID Card Proof
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Sub-Navigation Toolbar -->
+        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+          <button class="btn-admin-tab active" id="btn-admin-nav-map" onclick="showAdminTab('map')">
+            🗺️ Interactive Campus Map & Multi-Color Clustering
+          </button>
+          <button class="btn-admin-tab" id="btn-admin-nav-desk" onclick="showAdminTab('desk')">
+            ⚡ Master Complaints & User Reports
+          </button>
+          <button class="btn-admin-tab" id="btn-admin-nav-dir" onclick="showAdminTab('directory')">
+            👥 Campus Providers & Directory
+          </button>
+          <button class="btn-admin-tab" id="btn-admin-nav-audit" onclick="showAdminTab('audit')">
+            📸 Solution Proof Audit & Admin Approval
+          </button>
+        </div>
+
+        <!-- TAB 1: REALISTIC MAP & MULTI-COLOR CLUSTERING -->
+        <div id="admin-sec-map">
+          
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">🗺️ Real Campus Map & Spatial Hotspot Clustering</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  Real-world GPS coordinates with category-coded cluster rings. Hover over any hotspot to view active issues.
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <div class="map-basis-switcher" style="margin-bottom: 0;">
+                  <button class="btn-map-basis active" id="btn-basis-volume" onclick="toggleClusteringBasis('volume')">
+                    📍 Volume / Numbers
+                  </button>
+                  <button class="btn-map-basis" id="btn-basis-severity" onclick="toggleClusteringBasis('severity')">
+                    🔥 Hazard Index
+                  </button>
+                </div>
+                <button type="button" class="btn-emergency-beacon" onclick="openEmergencySosModal()">
+                  🚨 Broadcast Emergency SOS
+                </button>
+              </div>
+            </div>
+
+            <!-- Realistic Layer Switcher & Global Campus Location Controls -->
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <!-- Mode Toggle -->
+                <button type="button" class="btn-outline active" id="btn-toggle-leaflet" onclick="switchMapRenderer('leaflet')" style="font-size: 12px;">
+                  🛰️ Realistic GPS Map
+                </button>
+                <button type="button" class="btn-outline" id="btn-toggle-svg" onclick="switchMapRenderer('svg')" style="font-size: 12px;">
+                  🏛️ Blueprint Canvas
+                </button>
+
+                <!-- Realistic Tile Layer Selector -->
+                <div class="map-layer-toolbar" id="leaflet-layer-toolbar">
+                  <button type="button" class="map-layer-btn active" id="btn-layer-satellite" onclick="switchLeafletTileLayer('satellite')">
+                    🛰️ Satellite HD
+                  </button>
+                  <button type="button" class="map-layer-btn" id="btn-layer-streets" onclick="switchLeafletTileLayer('streets')">
+                    🗺️ Streets
+                  </button>
+                  <button type="button" class="map-layer-btn" id="btn-layer-tactical" onclick="switchLeafletTileLayer('tactical')">
+                    🌑 Cyber Radar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interactive Campus GPS & Location Command Center -->
+              <div id="admin-campus-locked-banner" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #0f172a; border: 1px solid #2563eb; border-radius: 10px; padding: 8px 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); width: 100%;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 13px;">🏛️</span>
+                  <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">Active Campus:</span>
+                  <strong id="admin-locked-college-name" style="font-size: 13px; font-weight: 800; color: #60a5fa;">IIT Delhi Main Campus</strong>
+                </div>
+                <span style="color: #475569;">|</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">📍 GPS Ground:</span>
+                  <span id="admin-locked-college-gps" style="font-size: 12px; font-weight: 700; color: #34d399; font-family: monospace; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3);">28.5450° N, 77.1930° E</span>
+                  <span style="background: rgba(37, 99, 235, 0.2); border: 1px solid #3b82f6; color: #93c5fd; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px;">
+                    🔒 Scoped
+                  </span>
+                </div>
+                
+                <!-- Quick City/Campus Switcher Buttons -->
+                <div style="display: flex; align-items: center; gap: 4px; margin-left: auto; flex-wrap: wrap;">
+                  <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">Switch Campus:</span>
+                  <button type="button" class="btn-city-chip" onclick="quickSwitchCampusGPS('Mathura')">📍 Mathura</button>
+                  <button type="button" class="btn-city-chip" onclick="quickSwitchCampusGPS('Meerut')">📍 Meerut</button>
+                  <button type="button" class="btn-city-chip" onclick="quickSwitchCampusGPS('Delhi')">📍 Delhi (IIT)</button>
+                  <button type="button" class="btn-city-chip" onclick="quickSwitchCampusGPS('Agra')">📍 Agra</button>
+                  <button type="button" class="btn-city-chip" onclick="detectAndUpdateAdminLiveGPS()" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399;" title="Detect Current Browser Geolocation">
+                    📡 Detect Live GPS
+                  </button>
+                </div>
+              </div>
+
+              <!-- Fallback Global Campus Selector for Preview / Unassigned Mode -->
+              <div id="admin-campus-global-controls" style="display: none; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 12px; font-weight: 600; color: #94a3b8;">🌍 Campus:</span>
+                  <select id="admin-campus-map-select" class="form-select" onchange="onAdminChangeCampus(this.value)" style="padding: 5px 10px; font-size: 12px; border-radius: 6px; width: auto; max-width: 250px; background: #0f172a; border-color: #334155; color: #f8fafc;">
+                    <option value="">Loading Campuses...</option>
+                  </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <input type="text" id="admin-campus-quick-search" placeholder="🔍 Search university..." onkeydown="if(event.key==='Enter') searchAndFlyToGlobalCampus(this.value)" style="background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 4px 8px; border-radius: 6px; font-size: 12px; width: 160px;">
+                  <button type="button" class="btn-outline" onclick="searchAndFlyToGlobalCampus(document.getElementById('admin-campus-quick-search').value)" style="padding: 4px 8px; font-size: 11px;">Go</button>
+                  <button type="button" class="btn-outline" onclick="flyToUserLiveGPS()" style="padding: 4px 8px; font-size: 11px; background: rgba(16, 185, 129, 0.15); border-color: #10b981; color: #34d399;">📍 My GPS</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1. Real GPS Leaflet Map Container -->
+            <div id="leaflet-campus-map-wrapper">
+              <div id="leaflet-campus-map"></div>
+            </div>
+
+            <!-- 2. Architectural Blueprint SVG Canvas Container -->
+            <div id="svg-campus-map-wrapper" style="display: none;" class="campus-interactive-map">
+              <svg id="campus-svg-map" class="map-svg-canvas" viewBox="0 0 800 360">
+                <!-- Rendered dynamically -->
+              </svg>
+            </div>
+
+            <!-- Multi-Problem Category Color Legend -->
+            <div class="map-legend-bar">
+              <span style="font-weight: 700; color: var(--slate-800); margin-right: 4px;">Problem Categories:</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #f59e0b;"></span> ⚡ Electrical</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #06b6d4;"></span> 💧 Plumbing</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #0284c7;"></span> ❄️ HVAC</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #ef4444;"></span> 🚨 Safety / Emergency</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #8b5cf6;"></span> 🪚 Civil / Furniture</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #10b981;"></span> 🌐 IT / Internet</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #84cc16;"></span> 🧹 Sanitation</span>
+              <span class="legend-chip"><span class="legend-dot" style="background: #6366f1;"></span> 🔬 Lab Equipment</span>
+            </div>
+
+            <!-- Cluster Cards Container with Rich Hover / Details -->
+            <div style="margin-top: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 15px; font-weight: 700;" id="cluster-section-title">
+                  📍 Active Spatial Clusters (Hover on map to inspect)
+                </h3>
+                <button class="btn-primary" onclick="reRunActiveClustering()" style="padding: 6px 12px; font-size: 12px;">
+                  ⚙️ Re-run Spatial DBSCAN
+                </button>
+              </div>
+              <div id="admin-clusters-container">
+                <p style="color: var(--text-muted); font-size: 14px;">Loading clustering analytics...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campus Facilities Building Incident Grid -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🏛️ Campus Facilities Building Grid</h2>
+              <span style="font-size: 13px; color: var(--text-muted);">Real-time incident density per facility</span>
+            </div>
+            <div class="campus-map-grid" id="campus-building-grid">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB 2: MASTER COMPLAINTS DESK (ALL USER COMPLAINTS) -->
+        <div id="admin-sec-desk" style="display: none;">
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">⚡ Master Complaints & AI Dispatch Desk</h2>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                  All registered complaints filed by students with incident photos, audio memos, and dispatch controls
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <select id="admin-filter-status" class="form-select" style="width: auto; padding: 4px 10px; font-size: 13px;" onchange="loadAdminComplaints()">
+                  <option value="All">All Statuses</option>
+                  <option value="Submitted">Submitted (Unassigned)</option>
+                  <option value="Assigned">Assigned</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Resolved">Resolved (Pending Approval)</option>
+                  <option value="Closed">Closed / Verified</option>
+                </select>
+                <button class="btn-outline" onclick="loadAdminComplaints()">🔄 Refresh Complaints</button>
+              </div>
+            </div>
+
+            <div id="admin-complaints-list">
+              <p style="color: var(--text-muted); font-size: 14px;">Loading master complaint desk...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: CAMPUS PROVIDERS & COMMUNITY DIRECTORY -->
+        <div id="admin-sec-directory" style="display: none;">
+          
+          <!-- Providers Card Roster -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">👷 Campus Maintenance Technicians & Providers Roster</h2>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Active technicians with multi-specialty coverage and live workload</div>
+              </div>
+              <button class="btn-outline" onclick="loadCampusDirectory()">🔄 Refresh Roster</button>
+            </div>
+            <div class="provider-cards-grid" id="admin-providers-cards-container">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- All Users Community Table -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">👥 All Registered Campus Members</h2>
+              <span style="font-size: 13px; color: var(--text-muted);">Students, providers, and administrators</span>
+            </div>
+            <div class="data-table-wrapper">
+              <table class="data-table" id="campus-directory-table">
+                <thead>
+                  <tr>
+                    <th>Persona / Name</th>
+                    <th>Role</th>
+                    <th>College Affiliation</th>
+                    <th>Contact Info</th>
+                    <th>Specialty / Rating</th>
+                    <th>Workload / History</th>
+                  </tr>
+                </thead>
+                <tbody id="campus-directory-tbody">
+                  <tr><td colspan="6" style="text-align:center;">Loading directory...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB 4: PROBLEM-TO-SOLUTION AUDIT & ADMIN APPROVAL DESK -->
+        <div id="admin-sec-audit" style="display: none;">
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">📸 Problem-to-Solution Proof Audit & Admin Final Approval</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  Side-by-side inspection of incoming complaint vs realistic fix proof submitted by technician. Admin signs off with <strong>Final Done Approval</strong>.
+                </p>
+              </div>
+              <button class="btn-outline" onclick="loadAdminResolutionAudit()">🔄 Refresh Audit Trail</button>
+            </div>
+            <div id="admin-audit-cards-container">
+              <p style="color: var(--text-muted); font-size: 14px; padding: 12px;">Loading problem-to-solution audit logs...</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      CampusCare AI • Full-Stack Hackathon MVP • Built with Flask, SQLite, Scikit-Learn, Leaflet & Vanilla JS
+    </footer>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: Live Camera Viewfinder Modal -->
+  <div class="modal-overlay" id="modal-live-camera">
+    <div class="modal-content" style="max-width: 520px; text-align: center;">
+      <div class="card-header">
+        <h2 class="card-title">📸 Live Camera Viewfinder</h2>
+        <button class="btn-outline" onclick="closeLiveCameraModal()">✕ Close</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+        Point camera at the incident area and click "Capture Live Photo". Pre-saved gallery uploads are disabled to prevent fake reports.
+      </p>
+      
+      <div class="camera-viewfinder-box">
+        <video id="live-camera-stream" class="camera-video-stream" autoplay playsinline muted></video>
+        <div class="camera-reticle"></div>
+      </div>
+      <canvas id="live-camera-canvas" style="display: none;"></canvas>
+
+      <div style="margin-top: 14px; display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn-primary" onclick="captureLiveCameraFrame()" style="padding: 10px 24px; font-size: 14px; background: #0284c7;">
+          📸 Capture Photo
+        </button>
+        <button type="button" class="btn-outline" onclick="fallbackToHardwareCamera()">
+          📱 Open Phone Shutter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Emergency SOS Broadcast Modal -->
+  <div class="modal-overlay" id="modal-emergency-sos">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="card-header">
+        <h2 class="card-title" style="color: #dc2626;">🚨 Broadcast Campus Emergency SOS</h2>
+        <button class="btn-outline" onclick="closeModal('modal-emergency-sos')">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        Immediately dispatches high-priority push alert notifications to all on-call technicians across the campus.
+      </p>
+      <form id="emergency-sos-form" onsubmit="handleEmergencySosSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Hazard Location / Building</label>
+          <select id="sos-building" class="form-select" required>
+            <option value="Hostel Block A">Hostel Block A</option>
+            <option value="Hostel Block B">Hostel Block B</option>
+            <option value="Central Library">Central Library</option>
+            <option value="Engineering Hall">Engineering Hall</option>
+            <option value="Science Complex">Science Complex</option>
+            <option value="Dining Center">Dining Center</option>
+            <option value="Sports Complex">Sports Complex</option>
+            <option value="Administrative Block">Administrative Block</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emergency Category</label>
+          <select id="sos-category" class="form-select" required>
+            <option value="Electrical Sparks / Fire Hazard">⚡ Electrical Sparks / Fire Hazard</option>
+            <option value="Severe Flood / Main Water Pipe Burst">💧 Severe Flood / Main Water Pipe Burst</option>
+            <option value="Gas Leak / Chemical Fume Hazard">☣️ Gas Leak / Chemical Fume Hazard</option>
+            <option value="Structural Collapse / Ceiling Seepage">🏛️ Structural Collapse / Ceiling Seepage</option>
+            <option value="Elevator Trapped Passengers">🛗 Elevator Trapped Passengers</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emergency Notes / Instructions</label>
+          <textarea id="sos-notes" class="form-textarea" rows="3" placeholder="Describe the immediate danger and instructions for responding staff..." required></textarea>
+        </div>
+        <button type="submit" class="btn-emergency-beacon" style="width: 100%; justify-content: center; padding: 12px; font-size: 14px;">
+          🚨 DISPATCH IMMEDIATE CAMPUS-WIDE SOS
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Explainable AI Provider Match Modal -->
+  <div class="modal-overlay" id="modal-ai-match">
+    <div class="modal-content">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">🤖 Explainable AI Provider Matcher</h2>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="modal-match-subtitle">
+            Evaluating multi-factor scoring for Ticket #1
+          </p>
+        </div>
+        <button class="btn-outline" onclick="closeModal('modal-ai-match')">✕ Close</button>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;">
+        <strong>Multi-Criteria Scoring Breakdown:</strong>
+        <div style="display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap;">
+          <span>🎯 Specialty Match (40 pts)</span>
+          <span>⚡ Workload Queue (25 pts)</span>
+          <span>⭐ Rating (20 pts)</span>
+          <span>📍 Zone & Campus (15 pts)</span>
+        </div>
+      </div>
+
+      <div id="modal-match-candidates">
+        <p style="color: var(--text-muted); font-size: 14px;">Calculating optimal contractor matches...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Resolution / Job Update Modal (Realistic Proof Upload) -->
+  <div class="modal-overlay" id="modal-job-update">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="card-header">
+        <h2 class="card-title" id="job-modal-title">✅ Complete Work Order & Submit Proof</h2>
+        <button class="btn-outline" onclick="closeModal('modal-job-update')">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+        To ensure realistic operational tracking, please upload a photo of the completed repair along with technical notes.
+      </p>
+      <form id="job-update-form" onsubmit="handleJobStatusSubmit(event)">
+        <input type="hidden" id="job-update-id">
+        <input type="hidden" id="job-update-status" value="Completed">
+        
+        <div class="form-group">
+          <label class="form-label">📸 Photo of Completed Fix (Realistic Proof)</label>
+          <input type="file" id="job-update-image" accept="image/*" class="form-input" onchange="previewJobProofImage(event)">
+          <div id="job-proof-preview-container" style="display: none; margin-top: 8px;">
+            <img id="job-proof-preview-thumb" src="" style="max-height: 120px; border-radius: 6px; border: 1px solid var(--border);" alt="Solution Preview">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Work Summary / Technician Notes</label>
+          <textarea id="job-update-notes" class="form-textarea" rows="3" placeholder="Describe parts replaced, voltage tested, or safety measures taken..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Resolution Code / Certification</label>
+          <input type="text" id="job-update-proof" class="form-input" placeholder="e.g., Line grounded, 240V steady, replacement fuse verified">
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 11px;" id="btn-submit-job-update">
+          🚀 Submit Realistic Proof & Mark Resolved
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Admin / Student Verified ID Card Modal -->
+  <div class="modal-overlay" id="modal-view-id-card">
+    <div class="modal-content" style="max-width: 480px; text-align: center;">
+      <div class="card-header">
+        <h2 class="card-title" id="modal-idcard-title">🪪 Verified Campus Identification Proof</h2>
+        <button class="btn-outline" onclick="closeModal('modal-view-id-card')">✕</button>
+      </div>
+      <div style="padding: 16px;">
+        <img id="modal-admin-card-img" src="" style="max-width: 100%; max-height: 320px; border-radius: 8px; border: 1px solid var(--border); object-fit: contain;" alt="ID Card Proof">
+        <div style="margin-top: 10px; font-size: 13px; color: var(--text-muted);" id="modal-admin-card-caption">
+          Verified Faculty / Staff Identification Document
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Cluster Problem Details & Breakdown Modal -->
+  <div class="modal-overlay" id="modal-cluster-detail">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="card-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="cluster-modal-badge" style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px; background: #ef4444; color: white;">🚨 HOTSPOT</span>
+            <h2 class="card-title" id="cluster-modal-title" style="margin: 0; font-size: 17px;">Hostel Block A Cluster</h2>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="cluster-modal-meta">
+            Building: Hostel Block A • Category: Electrical • Pan-India Scoped
+          </p>
+        </div>
+        <button class="btn-outline" onclick="closeModal('modal-cluster-detail')">✕ Close</button>
+      </div>
+
+      <!-- Prominent Total Count & Severity Badges -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
+        <div style="background: #0f172a; color: white; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #334155;">
+          <span style="font-size: 11px; color: #94a3b8; display: block; font-weight: 600;">TOTAL COMPLAINTS</span>
+          <span id="cluster-modal-count" style="font-size: 26px; font-weight: 800; color: #38bdf8;">0</span>
+        </div>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 11px; font-weight: 600; display: block;">CRITICAL HAZARDS</span>
+          <span id="cluster-modal-critical" style="font-size: 26px; font-weight: 800; color: #dc2626;">0</span>
+        </div>
+        <div style="background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 12px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 11px; font-weight: 600; display: block;">HIGH URGENCY</span>
+          <span id="cluster-modal-high" style="font-size: 26px; font-weight: 800; color: #d97706;">0</span>
+        </div>
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 12px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 11px; font-weight: 600; display: block;">HAZARD INDEX</span>
+          <span id="cluster-modal-hazard" style="font-size: 26px; font-weight: 800; color: #16a34a;">0.0</span>
+        </div>
+      </div>
+
+      <!-- Prominent Problem Description Box -->
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #2563eb; border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+        <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 800; color: #1e293b;">
+          📝 Detailed Problem Narrative & Root Cause:
+        </h4>
+        <div id="cluster-modal-description" style="margin: 0; font-size: 13px; line-height: 1.6; color: #334155; font-weight: 500;">
+          Detailed problem narrative goes here...
+        </div>
+      </div>
+
+      <!-- Active Reported Incident Titles -->
+      <div style="margin-bottom: 16px;">
+        <h4 style="font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+          📋 Aggregated Student Complaint Tickets:
+        </h4>
+        <div id="cluster-modal-tickets-list" style="margin: 0; max-height: 250px; overflow-y: auto; padding-right: 4px;">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 14px;">
+        <button type="button" class="btn-outline" onclick="closeModal('modal-cluster-detail')">Close</button>
+        <button type="button" class="btn-primary" onclick="showAdminTab('desk'); closeModal('modal-cluster-detail');" style="background: #0284c7;">
+          📋 View in Master Desk
+        </button>
+        <button type="button" class="btn-emergency-beacon" onclick="openEmergencySosModal(); closeModal('modal-cluster-detail');">
+          🚨 Broadcast SOS to Campus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Student Feedback Modal -->
+  <div class="modal-overlay" id="modal-feedback">
+    <div class="modal-content">
+      <div class="card-header">
+        <h2 class="card-title">⭐ Rate Service Resolution</h2>
+        <button class="btn-outline" onclick="closeModal('modal-feedback')">✕</button>
+      </div>
+      <form id="feedback-form" onsubmit="handleFeedbackSubmit(event)">
+        <input type="hidden" id="feedback-complaint-id">
+        
+        <div class="form-group">
+          <label class="form-label">How satisfied are you with the technician's repair?</label>
+          <div class="star-rating-select" id="star-picker">
+            <span class="star active" data-val="1" onclick="setFeedbackRating(1)">★</span>
+            <span class="star active" data-val="2" onclick="setFeedbackRating(2)">★</span>
+            <span class="star active" data-val="3" onclick="setFeedbackRating(3)">★</span>
+            <span class="star active" data-val="4" onclick="setFeedbackRating(4)">★</span>
+            <span class="star active" data-val="5" onclick="setFeedbackRating(5)">★</span>
+          </div>
+          <input type="hidden" id="feedback-rating-val" value="5">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Optional Comments</label>
+          <textarea id="feedback-comment" class="form-textarea" rows="3" placeholder="Great response time, clean work..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%;">
+          Submit Feedback
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 7: Notifications Bell Modal -->
+  <div class="modal-overlay" id="modal-notifications">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="card-header">
+        <h2 class="card-title">🔔 Campus Alerts & Notifications</h2>
+        <button class="btn-outline" onclick="closeModal('modal-notifications')">✕</button>
+      </div>
+      <div id="notifications-list" style="max-height: 400px; overflow-y: auto;">
+        <p style="color: var(--text-muted); font-size: 14px; padding: 10px;">No new alerts.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frontend Logic -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
